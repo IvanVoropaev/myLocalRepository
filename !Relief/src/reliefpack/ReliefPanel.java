@@ -1,6 +1,5 @@
 package reliefpack;
 
-import java.awt.Color;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.geom.Point2D;
@@ -16,9 +15,9 @@ public class ReliefPanel extends JPanel {
 	//int HEIGHT = this.getHeight();
 	//int WIDTH = this.getWidth();
 			
-	private int HEIGHT = 700;
-	private int WIDTH = 1100;
-	private int step = 10;
+	private int HEIGHT = 500;
+	private int WIDTH = 500;
+	private int step = 100;
 	
 	private ArrayList<Point3D> points = new ArrayList<Point3D>();
 	private ArrayList<Point3D> newpoints = new ArrayList<Point3D>();
@@ -27,6 +26,8 @@ public class ReliefPanel extends JPanel {
 	private double Xmin;
 	private double Ymax;
 	private double Ymin;
+	private double Zmax;
+	private double Zmin;
 	
 	private double[] Gradient = new double[10];
 	ArrayList<Rect> net;
@@ -76,9 +77,9 @@ public class ReliefPanel extends JPanel {
 		
 		//g2.draw(net.get(100).getRectangle());
 		
-		/*for(int i = 0; i < newpoints.size(); i++) {
-			g2.drawLine((int) newpoints.get(i).getX(), (int) newpoints.get(i).getY(), (int) newpoints.get(i).getX(), (int) newpoints.get(i).getY());
-		}*/
+		//for(int i = 0; i < newpoints.size(); i++) {
+			//.drawLine((int) newpoints.get(i).getX(), (int) newpoints.get(i).getY(), (int) newpoints.get(i).getX(), (int) newpoints.get(i).getY());
+		//}
 				
 		/*ArrayList<Point2D> net = setka();
 		ArrayList<Integer> high = highs(net);
@@ -169,31 +170,7 @@ public class ReliefPanel extends JPanel {
 			
 	}
 	
-	/*public ArrayList<Integer> highs(ArrayList<Point2D> net) {
-		
-		ArrayList<Integer> high = new ArrayList<Integer>();
-		
-		for(int i = 0; i < net.size(); i++) {
-			
-			int dSum = 0;
-			int k = 0;
-			//ArrayList<Point2D> aroundPoint = new ArrayList<Point2D>();
-			for(int j = 0; j < points.size(); j++) {
-				if(((points.get(j).getX() < (net.get(i).getX() + step)) && (points.get(j).getX() > (net.get(i).getX() - step))) && 
-						((points.get(j).getY() < (net.get(i).getY() + step)) && (points.get(j).getY() > (net.get(i).getY() - step)))) {
-					dSum = (int) (dSum + points.get(j).getZ());
-					k++;
-				}	
-			}
-			if(k != 0) {
-				dSum = dSum / k;
-				high.add((int) dSum);
-			}
-			else high.add(0);
 
-		}
-		return high;	
-	}*/
 	
 	/*
 	 * пересчет координат точек для отображения на панели
@@ -206,21 +183,39 @@ public class ReliefPanel extends JPanel {
 		Xmin = points.get(0).getX();
 		Ymax = points.get(0).getY();
 		Ymin = points.get(0).getY();
+		Zmax = points.get(0).getY();
+		Zmin = points.get(0).getY();
 		
 		for(int i = 0; i < points.size(); i++) {
 			if(points.get(i).getX() > Xmax) Xmax = points.get(i).getX();
 			if(points.get(i).getX() < Xmin) Xmin = points.get(i).getX();
+			
 			if(points.get(i).getY() > Ymax) Ymax = points.get(i).getY();
 			if(points.get(i).getY() < Ymin) Ymin = points.get(i).getY();
+			
+			if(points.get(i).getZ() > Zmax) Zmax = points.get(i).getZ();
+			if(points.get(i).getZ() < Zmin) Zmin = points.get(i).getZ();
 		}
 		
+		System.out.println(Xmax + " " + Ymax + " " + Xmin + " " + Ymin);
 		double newX;
 		double newY;
+		double newZ;
 		for(int i = 0; i < points.size(); i++) {
 			newX = (((points.get(i).getX() - Xmin) * WIDTH) / (Xmax - Xmin));
 			newY = (HEIGHT - ((points.get(i).getY() - Ymin) * HEIGHT) / (Ymax - Ymin));
 			newPoints.add(new Point3D(newX, newY, points.get(i).getZ()));
+			
+			/*newX = (((points.get(i).getX() - Xmin)) / (Xmax - Xmin));
+			newY = (1 - ((points.get(i).getY() - Ymin)) / (Ymax - Ymin));
+			newZ = points.get(i).getZ() / (Zmax - Zmin);
+			newPoints.add(new Point3D(newX, newY, newZ));*/
 		}
+		
+		for(int i = 0; i < newPoints.size(); i++) {
+			System.out.println(newPoints.get(i).getX() + " " + newPoints.get(i).getY() + " " + + newPoints.get(i).getZ());
+		}
+		
 		return newPoints;
 	}
 	
@@ -249,4 +244,23 @@ public class ReliefPanel extends JPanel {
 		
 		return Gradient;
 	}
+	
+	public void bicubicInterpol(ArrayList<Point3D> points) {
+		ArrayList<Point3D> colorPoints = new ArrayList<Point3D>();
+		ArrayList<Rectangle2D> rectangles = new ArrayList<Rectangle2D>();
+		Point3D[][] interpolPoints = new Point3D[4][4]; 
+		
+		for(int i = 0; i < HEIGHT; i++) {
+			for(int j = 0; i < WIDTH; j++) {
+				colorPoints.add(new Point3D(i, j, 0));
+			}
+		}
+		
+		for(int i = 0; i < colorPoints.size(); i++) {
+			Point2D point = colorPoints.get(i).getPoint2D();
+			
+		}
+	}
+	
+	
 }

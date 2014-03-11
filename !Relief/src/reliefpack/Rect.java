@@ -51,7 +51,7 @@ public class Rect {
 			color = color.brighter();
 			j++;	
 		}
-		System.out.println(color + " " + j);
+		//System.out.println(color + " " + j);
 		return color;
 	}
 }
