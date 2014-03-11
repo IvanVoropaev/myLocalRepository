@@ -17,7 +17,7 @@ public class ReliefFrame extends JFrame {
 	private int Zcoord;
 	
 	ReliefFrame() {
-		setSize(500, 500);
+		setSize(1100, 700);
 		File file = new File("points.txt");
 		
 		
@@ -37,7 +37,7 @@ public class ReliefFrame extends JFrame {
 			e.printStackTrace();
 		}
 		
-		ReliefPanel panel = new ReliefPanel(Xpoints, Ypoints, Zpoints);
+		ReliefPanel panel = new ReliefPanel(points);
 		add(panel);
 	}
 }

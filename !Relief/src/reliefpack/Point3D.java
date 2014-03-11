@@ -33,6 +33,10 @@ public class Point3D extends Point2D {
 		// TODO Auto-generated method stub
 		return z;
 	}
+	
+	public Point2D getPoint2D() {
+		return new Point2D.Double(x, y);
+	}
 
 	@Override
 	public void setLocation(double x, double y) {

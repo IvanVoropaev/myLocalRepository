@@ -16,47 +16,35 @@ public class ReliefPanel extends JPanel {
 	//int HEIGHT = this.getHeight();
 	//int WIDTH = this.getWidth();
 			
-	private int HEIGHT = 500;
-	private int WIDTH = 500;
-	private int step = 5;
+	private int HEIGHT = 700;
+	private int WIDTH = 1100;
+	private int step = 10;
 	
-	private ArrayList<Point2D> points = new ArrayList<Point2D>();
-	private ArrayList<Point2D> newpoints = new ArrayList<Point2D>();
+	private ArrayList<Point3D> points = new ArrayList<Point3D>();
+	private ArrayList<Point3D> newpoints = new ArrayList<Point3D>();
 	
-	ArrayList<Double> Xpoints;
-	ArrayList<Double> Ypoints;
-	ArrayList<Integer> Zpoints;
+	private double Xmax;
+	private double Xmin;
+	private double Ymax;
+	private double Ymin;
 	
-	ReliefPanel(ArrayList<Double> Xpoints, ArrayList<Double> Ypoints, ArrayList<Integer> Zpoints) {
+	private double[] Gradient = new double[10];
+	ArrayList<Rect> net;
 		
-		this.Xpoints = Xpoints;
-		this.Ypoints = Ypoints;
-		this.Zpoints = Zpoints;
+	ReliefPanel(ArrayList<Point3D> points) {
 		
-		double Xmax = Xpoints.get(0);
-		double Xmin = Xpoints.get(0);
-		double Ymax = Ypoints.get(0);
-		double Ymin = Ypoints.get(0);
-		for(int i = 0; i < Xpoints.size(); i++) {
-			if(Xpoints.get(i) > Xmax) Xmax = Xpoints.get(i);
-			if(Xpoints.get(i) < Xmin) Xmin = Xpoints.get(i);
-			if(Ypoints.get(i) > Ymax) Ymax = Ypoints.get(i);
-			if(Ypoints.get(i) < Ymin) Ymin = Ypoints.get(i);
-		}
+		this.points = points;
+		newpoints = newPoints(points);
+		Gradient = Gradient(points);
+		net = setka();
 		
-		System.out.println(Xmax + "; " + Ymax + "\n" + Xmin + "; " + Ymin);
+		/*for(int i = 0; i < net.size(); i++) {
+			System.out.println(net.get(i).getRectangle().getCenterX() + " " + net.get(i).getRectangle().getCenterY() + " " + net.get(i).getAltitude());
+		}*/
 		
-		double newX;
-		double newY;
-		for(int i = 0; i < Xpoints.size(); i++) {
-			newX = (((Xpoints.get(i) - Xmin) * WIDTH) / (Xmax - Xmin));
-			newY = (HEIGHT - ((Ypoints.get(i) - Ymin) * HEIGHT) / (Ymax - Ymin));
-			points.add(new Point2D.Double(newX, newY));
-			//System.out.println(HEIGHT + "; " + WIDTH);
-			//System.out.println(newX + "; " + newY);
-		}
-		
-		
+		/*for(int i = 0; i < Gradient.length; i++) {
+			System.out.println(Gradient[i]);
+		}*/
 		
 		/*Point2D myPoint = new Point2D.Double(500, 500);
 		int round = 10;
@@ -71,7 +59,7 @@ public class ReliefPanel extends JPanel {
 			System.out.println(aroundPoint.get(i).getX() + "; " + aroundPoint.get(i).getY());
 		}*/
 		
-		
+		//for(int i = 0)
 	}
 	
 	
@@ -79,28 +67,20 @@ public class ReliefPanel extends JPanel {
 	protected void paintComponent(Graphics g) {
 		Graphics2D g2 = (Graphics2D) g;
 		
-		/*for(int i = 0; i < points.size(); i++) {
-			g2.drawLine((int) points.get(i).getX(), (int) points.get(i).getY(), (int) points.get(i).getX(), (int) points.get(i).getY());
+		//ArrayList<Rect> net = setka();
+		
+		for(int i = 0; i < net.size(); i++) {
+			g2.setPaint(net.get(i).getColor(Gradient));
+			g2.fill(net.get(i).getRectangle());
+		}
+		
+		//g2.draw(net.get(100).getRectangle());
+		
+		/*for(int i = 0; i < newpoints.size(); i++) {
+			g2.drawLine((int) newpoints.get(i).getX(), (int) newpoints.get(i).getY(), (int) newpoints.get(i).getX(), (int) newpoints.get(i).getY());
 		}*/
-		
-		/*int hig = 1600;
-		
-		ArrayList<Point2D> hpoint = new ArrayList<Point2D>();
-		for(int i = 0; i < points.size(); i++) {
-			if(Zpoints.get(i) == hig) {
-				hpoint = points;
-			}
-		}
-		
-		Polygon poly = new Polygon();
-		
-		for(int i = 0; i < hpoint.size(); i++) {
-			poly.addPoint((int) hpoint.get(i).getX(), (int) hpoint.get(i).getY());
-		}
-		
-		g2.draw(poly);*/
-		
-		ArrayList<Point2D> net = setka();
+				
+		/*ArrayList<Point2D> net = setka();
 		ArrayList<Integer> high = highs(net);
 		//Color color = new Color();
 		int hiMax = high.get(0);
@@ -142,33 +122,54 @@ public class ReliefPanel extends JPanel {
 			}
 			//g2.setPaint(Color.RED);
 			g2.fill(rect);
-		}
+		}*/
 		
 	
 	}
 	
-	private ArrayList<Point2D> setka() {
+	/*
+	 * разбивка сетки в соответствии с заданным шагом
+	 */
+	private ArrayList<Rect> setka() {
 		
-		ArrayList<Point2D> net = new ArrayList<Point2D>();
-		Point2D point;
-		for(int i = step / 2; i < WIDTH; i = i + step){
+		ArrayList<Rect> net = new ArrayList<Rect>();
+
+		for(int i = step / 2; i < WIDTH; i = i + step) { //
 			for(int j = step / 2; j < HEIGHT; j = j + step) {
-				point = new Point2D.Double(i, j);
-				net.add(point);
+				/*
+				 * добавление прямоугольника сетки
+				 */
+				Rectangle2D rectangle = new Rectangle2D.Double();
+				rectangle.setFrameFromCenter(i, j, i - step / 2, j - step / 2);
+				Rect rect = new Rect();
+				rect.setRectangle(rectangle);
+				
+				/*
+				 * вычисление высоты в пределах прямоугольника
+				 */
+				double dSum = 0;
+				int l = 0;
+				for(int k = 0; k < newpoints.size(); k++) {
+					if(rectangle.contains(newpoints.get(k).getPoint2D())) {
+						dSum = dSum + newpoints.get(k).getZ();
+						l++;
+					}
+				}
+				if(l != 0) {
+					dSum = dSum / l;
+					rect.setAltitude(dSum);
+				}
+				else rect.setAltitude(0);
+				
+				net.add(rect);
 			}
 		}
 		
-		
-		/*for(int i = 0; i < net.size(); i++) {
-			System.out.println(net.get(i).getX() + "; " + net.get(i).getY());
-		}*/
-		
 		return net;
-		
-		
+			
 	}
 	
-	public ArrayList<Integer> highs(ArrayList<Point2D> net) {
+	/*public ArrayList<Integer> highs(ArrayList<Point2D> net) {
 		
 		ArrayList<Integer> high = new ArrayList<Integer>();
 		
@@ -180,7 +181,7 @@ public class ReliefPanel extends JPanel {
 			for(int j = 0; j < points.size(); j++) {
 				if(((points.get(j).getX() < (net.get(i).getX() + step)) && (points.get(j).getX() > (net.get(i).getX() - step))) && 
 						((points.get(j).getY() < (net.get(i).getY() + step)) && (points.get(j).getY() > (net.get(i).getY() - step)))) {
-					dSum = dSum + Zpoints.get(j);
+					dSum = (int) (dSum + points.get(j).getZ());
 					k++;
 				}	
 			}
@@ -192,5 +193,60 @@ public class ReliefPanel extends JPanel {
 
 		}
 		return high;	
+	}*/
+	
+	/*
+	 * пересчет координат точек для отображения на панели
+	 */
+	private ArrayList<Point3D> newPoints(ArrayList<Point3D> points) {
+		
+		ArrayList<Point3D> newPoints = new ArrayList<Point3D>();
+		
+		Xmax = points.get(0).getX();
+		Xmin = points.get(0).getX();
+		Ymax = points.get(0).getY();
+		Ymin = points.get(0).getY();
+		
+		for(int i = 0; i < points.size(); i++) {
+			if(points.get(i).getX() > Xmax) Xmax = points.get(i).getX();
+			if(points.get(i).getX() < Xmin) Xmin = points.get(i).getX();
+			if(points.get(i).getY() > Ymax) Ymax = points.get(i).getY();
+			if(points.get(i).getY() < Ymin) Ymin = points.get(i).getY();
+		}
+		
+		double newX;
+		double newY;
+		for(int i = 0; i < points.size(); i++) {
+			newX = (((points.get(i).getX() - Xmin) * WIDTH) / (Xmax - Xmin));
+			newY = (HEIGHT - ((points.get(i).getY() - Ymin) * HEIGHT) / (Ymax - Ymin));
+			newPoints.add(new Point3D(newX, newY, points.get(i).getZ()));
+		}
+		return newPoints;
+	}
+	
+	
+	/*
+	 * получение 10-кратного градиента для высоты
+	 */
+	public double[] Gradient(ArrayList<Point3D> points) {
+		
+		double MaxZ = points.get(0).getZ();
+		double MinZ = points.get(0).getZ();
+		double step;
+		double[] Gradient = new double[10];
+		for(int i = 0; i < points.size(); i++) {
+			if(points.get(i).getZ() > MaxZ) MaxZ = points.get(i).getZ();
+			if(points.get(i).getZ() < MinZ) MinZ = points.get(i).getZ();
+		}
+		step = (MaxZ - MinZ) / 9;
+		
+		System.out.println(MinZ + " " + MaxZ + " " + step);
+		
+		Gradient[0] = MinZ;
+		for(int i = 1; i < 10; i++) {
+			Gradient[i] = Gradient[i - 1] + step;
+		}
+		
+		return Gradient;
 	}
 }
